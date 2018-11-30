@@ -1,0 +1,57 @@
+buildscript {
+	repositories {
+		mavenCentral()
+	}
+}
+
+plugins {
+  id "com.moowork.node" version "1.2.0"
+  id "org.springframework.boot" version "2.1.0.RELEASE"
+}
+
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'java'
+
+group = 'pl.adamnowicki.home'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 1.10
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation('org.springframework.boot:spring-boot-starter-thymeleaf')
+	implementation('org.springframework.boot:spring-boot-starter-web')
+	testImplementation('org.springframework.boot:spring-boot-starter-test')
+}
+
+node {
+  version = '8.11.3'
+  npmVersion = '5.6.0'
+  download = true
+}
+
+bootJar {
+  archiveName = "website.jar"
+}
+
+processResources {
+  with copySpec {
+      from "${buildDir}/fe"
+      include "**/*.html"
+      into "templates"
+  }
+
+  with copySpec {
+    from "${buildDir}/fe"
+    include "**/*.js", "**/*.css"
+    into "static"
+  }
+}
+
+task webpack(type: NodeTask, dependsOn: 'npmInstall') {
+	script = project.file('node_modules/.bin/webpack')
+}
+
+processResources.dependsOn 'webpack'
